@@ -69,7 +69,5 @@ Adding methods to `EngramLib` enum or `EngramLib.Session` is additive. Removing 
 
 ## See also
 
-- `SKILL.md`: operator skill record
-- `AGENT_HOWTO.md`: agent-facing usage notes
 - `docs/INTERFACE_DOCTRINE.md`: contract for downstream consumers
 - `../SubstrateLib/`: the substrate primitives EngramLib consumes

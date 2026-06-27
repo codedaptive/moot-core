@@ -60,6 +60,7 @@ Removed internal audit files:
 
 Removed internal/process comment lines:
 
+- `packages/libs/EngramLib/README.md`: 2 line(s)
 - `packages/libs/EngramLib/Sources/EngramLib/EngramLib.swift`: 1 line(s)
 - `packages/libs/EngramLib/rust/src/lib.rs`: 1 line(s)
 - `packages/libs/IntellectusLib/Package.swift`: 2 line(s)
