@@ -17,6 +17,8 @@ Source commit: `95d80419180650ddd1fd1f5f485dcefe87735977`
 
 Removed internal audit files:
 
+- `packages/libs/EngramLib/AGENT_HOWTO.md`
+- `packages/libs/EngramLib/SKILL.md`
 - `packages/libs/EngramLib/Sources/EngramLib/codex-code-comment-audit.md`
 - `packages/libs/EngramLib/Tests/EngramLibTests/codex-code-comment-audit.md`
 - `packages/libs/EngramLib/codex-code-comment-audit.md`
@@ -27,22 +29,30 @@ Removed internal audit files:
 - `packages/libs/IntellectusLib/codex-code-comment-audit.md`
 - `packages/libs/IntellectusLib/rust/src/codex-code-comment-audit.md`
 - `packages/libs/IntellectusLib/rust/tests/codex-code-comment-audit.md`
+- `packages/libs/SubstrateKernel/AGENTS.md`
+- `packages/libs/SubstrateKernel/SKILL.md`
 - `packages/libs/SubstrateKernel/Sources/SubstrateKernel/codex-code-comment-audit.md`
 - `packages/libs/SubstrateKernel/Tests/SubstrateKernelTests/codex-code-comment-audit.md`
 - `packages/libs/SubstrateKernel/codex-code-comment-audit.md`
 - `packages/libs/SubstrateKernel/rust/src/codex-code-comment-audit.md`
 - `packages/libs/SubstrateKernel/rust/tests/codex-code-comment-audit.md`
+- `packages/libs/SubstrateLib/AGENTS.md`
+- `packages/libs/SubstrateLib/SKILL.md`
 - `packages/libs/SubstrateLib/Sources/SubstrateLib/codex-code-comment-audit.md`
 - `packages/libs/SubstrateLib/Tests/SubstrateLibConformanceTests/codex-code-comment-audit.md`
 - `packages/libs/SubstrateLib/Tests/SubstrateLibTests/codex-code-comment-audit.md`
 - `packages/libs/SubstrateLib/codex-code-comment-audit.md`
 - `packages/libs/SubstrateLib/rust/src/codex-code-comment-audit.md`
 - `packages/libs/SubstrateLib/rust/tests/codex-code-comment-audit.md`
+- `packages/libs/SubstrateML/AGENTS.md`
+- `packages/libs/SubstrateML/SKILL.md`
 - `packages/libs/SubstrateML/Sources/SubstrateML/codex-code-comment-audit.md`
 - `packages/libs/SubstrateML/Tests/SubstrateMLTests/codex-code-comment-audit.md`
 - `packages/libs/SubstrateML/codex-code-comment-audit.md`
 - `packages/libs/SubstrateML/rust/src/codex-code-comment-audit.md`
 - `packages/libs/SubstrateML/rust/tests/codex-code-comment-audit.md`
+- `packages/libs/SubstrateTypes/AGENTS.md`
+- `packages/libs/SubstrateTypes/SKILL.md`
 - `packages/libs/SubstrateTypes/Sources/SubstrateTypes/codex-code-comment-audit.md`
 - `packages/libs/SubstrateTypes/Tests/SubstrateTypesTests/codex-code-comment-audit.md`
 - `packages/libs/SubstrateTypes/codex-code-comment-audit.md`
