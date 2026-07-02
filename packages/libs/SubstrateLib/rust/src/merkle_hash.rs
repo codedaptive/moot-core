@@ -43,13 +43,19 @@ impl MerkleVectorInput {
 
 /// Hash a drawer's content and vectors into a ContentHash.
 ///
-/// Canonical byte format per ADR-017 §16:
+/// Canonical byte format per ADR-017 §16 v2:
 /// - MerkleDomain::LEAF (0x00)
 /// - drawer id: 16 bytes big-endian UUID
-/// - content: u64 BE length prefix + UTF-8 NFC bytes
+/// - content: u64 BE length prefix + raw caller-supplied bytes
+///   (no UTF-8 validation or NFC normalization is performed here)
 /// - vectors: u32 BE count prefix, then each vector sorted by
-///   (model_id ascending, vector_index ascending) as IEEE-754 LE
-///   floats with a u32 BE per-vector count prefix
+///   (model_id ascending, vector_index ascending) with per-vector layout:
+///   u32 BE model_id-length | model_id UTF-8 bytes | u32 BE vector_index |
+///   u32 BE float-count | IEEE-754 LE floats
+///
+/// The v2 layout writes vector identity into the preimage before the float
+/// payload. v1 used model_id/vector_index only for sort order — a binding
+/// gap allowing vector substitution without hash mismatch (WS2-F4).
 ///
 /// `drawer_id` is the 16-byte big-endian UUID representation (RFC 4122).
 pub fn leaf(drawer_id: &[u8; 16], content: &[u8], vectors: &[MerkleVectorInput]) -> ContentHash {
@@ -113,11 +119,19 @@ pub fn tombstone(drawer_id: &[u8; 16]) -> ContentHash {
     ContentHash::new(sha256::hash(&payload))
 }
 
-/// Build the canonical leaf payload bytes per ADR-017 §16.
+/// Build the canonical leaf payload bytes per ADR-017 §16 v2.
 ///
 /// Shared between `leaf` (domain tag 0x00) and
 /// `keyed_commitment::commit` (domain tag 0x03) — one encoding,
-/// two uses.
+/// two uses. The v2 format writes vector identity (model_id + vector_index)
+/// into the preimage before the float payload, binding the vector's
+/// provenance to the hash. This prevents vector substitution attacks
+/// where swapping vectors of the same dimension would not change the
+/// leaf hash (security finding WS2-F4, fixed 2026-06-28).
+///
+/// Per-vector layout (v2):
+///   u32 BE model_id-length | model_id UTF-8 bytes | u32 BE vector_index |
+///   u32 BE float-count | IEEE-754 LE floats
 pub(crate) fn canonical_leaf_bytes(
     drawer_id: &[u8; 16],
     content: &[u8],
@@ -143,10 +157,18 @@ pub(crate) fn canonical_leaf_bytes(
     // u32 BE count prefix: number of vectors.
     bytes.extend_from_slice(&(sorted.len() as u32).to_be_bytes());
 
-    for vec in &sorted {
-        // Per-vector: u32 BE float count, then IEEE-754 LE floats.
-        bytes.extend_from_slice(&(vec.floats.len() as u32).to_be_bytes());
-        for &f in &vec.floats {
+    for v in &sorted {
+        // v2 per-vector layout: write identity BEFORE floats so that
+        // substituting a different model's embedding changes the hash.
+        // model_id: u32 BE length prefix + UTF-8 bytes.
+        let model_id_bytes = v.model_id.as_bytes();
+        bytes.extend_from_slice(&(model_id_bytes.len() as u32).to_be_bytes());
+        bytes.extend_from_slice(model_id_bytes);
+        // vector_index: u32 BE (multi-vector slot; 0 for single-vector models).
+        bytes.extend_from_slice(&v.vector_index.to_be_bytes());
+        // Float payload: u32 BE float count, then IEEE-754 LE floats.
+        bytes.extend_from_slice(&(v.floats.len() as u32).to_be_bytes());
+        for &f in &v.floats {
             // IEEE-754 single-precision, little-endian per ADR-017 §16.
             bytes.extend_from_slice(&f.to_le_bytes());
         }
@@ -286,5 +308,88 @@ mod tests {
         let hash = leaf(&id, b"", &[]);
         let root = interior(&[(id, hash)]);
         assert_ne!(hash.bytes().as_slice(), root.bytes().as_slice());
+    }
+
+    // WS2-F4 security regression tests — v2 identity binding.
+    // These tests verify that the v2 canonical leaf encoding binds vector
+    // identity (model_id + vector_index) into the preimage, so swapping a
+    // vector from a different model or slot changes the leaf hash.
+
+    #[test]
+    fn v2_binding_model_id_changes_hash() {
+        // Same floats, different model_id — must produce different hash.
+        let id = test_uuid_bytes();
+        let h1 = leaf(
+            &id,
+            b"test",
+            &[MerkleVectorInput::new("model-a".into(), 0, vec![1.0, 2.0, 3.0])],
+        );
+        let h2 = leaf(
+            &id,
+            b"test",
+            &[MerkleVectorInput::new("model-b".into(), 0, vec![1.0, 2.0, 3.0])],
+        );
+        assert_ne!(
+            h1, h2,
+            "v2 identity binding: same floats with different model_id must change the hash"
+        );
+    }
+
+    #[test]
+    fn v2_binding_vector_index_changes_hash() {
+        // Same floats, same model_id, different vector_index — must produce different hash.
+        let id = test_uuid_bytes();
+        let h1 = leaf(
+            &id,
+            b"test",
+            &[MerkleVectorInput::new("model-a".into(), 0, vec![1.0, 2.0, 3.0])],
+        );
+        let h2 = leaf(
+            &id,
+            b"test",
+            &[MerkleVectorInput::new("model-a".into(), 1, vec![1.0, 2.0, 3.0])],
+        );
+        assert_ne!(
+            h1, h2,
+            "v2 identity binding: same floats with different vector_index must change the hash"
+        );
+    }
+
+    #[test]
+    fn v2_cross_port_conformance_vector() {
+        // Pinned SHA-256 of v2 canonical leaf encoding for the shared
+        // cross-port conformance vector. Both Rust and Swift must produce
+        // this exact value. Seed: drawer 12345678-1234-1234-1234-123456789abc,
+        // content "hello", one vector model-a/idx=0/[1.0, 2.0].
+        //
+        // Derivation (v2 layout):
+        //   domain tag: 0x00
+        //   drawer id: 12 34 56 78 12 34 12 34 12 34 12 34 56 78 9a bc
+        //   content len: 00 00 00 00 00 00 00 05
+        //   content: 68 65 6c 6c 6f
+        //   vector count: 00 00 00 01
+        //   model_id len: 00 00 00 07
+        //   model_id: 6d 6f 64 65 6c 2d 61
+        //   vector_index: 00 00 00 00
+        //   float count: 00 00 00 02
+        //   float[0] 1.0f: 00 00 80 3f (LE)
+        //   float[1] 2.0f: 00 00 00 40 (LE)
+        let id = test_uuid_bytes();
+        // Pinned hash value: SHA-256 of v2 preimage described above.
+        // Identical to Swift test v2BindingCrossPortConformanceVector — byte-identical
+        // across ports is the conformance gate.
+        let expected_hex = "cb18e8a5dcff4eb955f731bf75c078b9390a175ff225cc67a1ff0f1d3fa192dc";
+        let hash = leaf(
+            &id,
+            b"hello",
+            &[MerkleVectorInput::new("model-a".into(), 0, vec![1.0_f32, 2.0_f32])],
+        );
+        let hex: String = hash.bytes().iter().map(|b| format!("{:02x}", b)).collect();
+        assert_eq!(
+            hex, expected_hex,
+            "v2 cross-port conformance vector mismatch — Swift and Rust must agree byte-for-byte"
+        );
+        // Print visible with `cargo test -- --nocapture` for external verification.
+        println!("v2-conformance-leaf-hex: {}", hex);
     }
 }

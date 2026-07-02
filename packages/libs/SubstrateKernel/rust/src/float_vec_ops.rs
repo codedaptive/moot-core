@@ -111,8 +111,9 @@ pub fn l2_normalize(mut v: Vec<f32>) -> Vec<f32> {
 
 /// Dot product of two equal-length float slices.
 ///
-/// Panics (debug) / returns a truncated result (release) if the
-/// slices have different lengths. Callers must ensure equal lengths.
+/// Panics in both debug and release builds if the slices have
+/// different lengths (`assert_eq!` is not debug-only). Callers must
+/// ensure equal lengths.
 ///
 /// Returns `sum(a[i] * b[i])` over all indices.
 #[inline]

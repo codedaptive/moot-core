@@ -84,7 +84,8 @@ public enum GrantHKDF {
             t = hmac(key: prk, data: data)
             okm.append(contentsOf: t)
             counter &+= 1
-            // Clear intermediate to avoid leaving key material in temporaries.
+            // Allow the optimizer to release `data` after this point;
+            // it is no longer needed and is out of scope next iteration.
             data.withUnsafeMutableBytes { _ in }
         }
         return Array(okm.prefix(length))

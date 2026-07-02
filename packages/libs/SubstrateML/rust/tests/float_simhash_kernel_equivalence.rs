@@ -1,9 +1,9 @@
 //! Step-1 (M4) equivalence: `substrate_kernel`'s `float_simhash_project`
 //! (scalar reference) reproduces `substrate_ml::float_simhash::project`
 //! bit-for-bit, via planes materialized by `float_simhash::planes`. This is the
-//! bit-identity gate for relocating the float projection into the kernel
-//! dispatch (SUBSTRATEKERNEL_SPEC § 5.4): the new generate-then-apply path must
-//! equal today's inline-RNG path. Mirror of Swift
+//! bit-identity gate between the two generate-then-apply paths: both
+//! `substrate_ml::float_simhash::project` and `substrate_kernel`'s
+//! `float_simhash_project` materialize planes then project. Mirror of Swift
 //! `FloatSimHashKernelEquivalenceTests`.
 
 use substrate_kernel::kernel::{ScalarKernel, SubstrateKernel};

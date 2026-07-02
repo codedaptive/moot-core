@@ -12,6 +12,8 @@
 //   6–13. each of the 8 lag bucket boundaries
 //   14. watermark advances correctly through multiple new entries
 //   15. determinism — same input, same output across two calls
+//   16. multiple field coords per entry — cross-product delta count
+//   17. lagBucket function canonical (matches MatrixTier.lagBuckets)
 
 import Testing
 @testable import SubstrateML
@@ -47,6 +49,38 @@ struct TemporalCausalityFoldTests {
             startWatermark: wm)
         #expect(result.deltas.isEmpty)
         #expect(result.newWatermark == wm)
+    }
+
+    // MARK: - 1b. Occupancy cap
+
+    @Test("occupancy cap bounds sources to maxWindowOccupancy")
+    func occupancyCapBoundsSources() {
+        // 514 entries, each 1 second apart (all inside the 256-minute window),
+        // each carrying one distinct source coord "s"="\(i)". The last entry
+        // (index 513) must pair against only the maxWindowOccupancy (512)
+        // most-recent in-window sources — indices 1...512 — because the cap
+        // drops the oldest as the buffer fills. Source 0 is dropped; sources 1
+        // and 512 survive. This bounds the fold to O(entries × cap) on a
+        // degenerate window and must be byte-identical to the Rust port.
+        let n = TemporalCausalityFold.maxWindowOccupancy + 2 // 514
+        let entries = (0..<n).map { i in
+            entry(Int64(i) * 1_000, [coord("s", "\(i)")])
+        }
+        let result = TemporalCausalityFold.fold(
+            entries: entries,
+            windowMinutes: 256,
+            startWatermark: .zero)
+
+        let lastTarget = "\(n - 1)"
+        let sourcesForLast = Set(
+            result.deltas
+                .filter { $0.0.target.valueRepr == lastTarget }
+                .map { $0.0.source.valueRepr })
+
+        #expect(sourcesForLast.count == TemporalCausalityFold.maxWindowOccupancy)
+        #expect(!sourcesForLast.contains("0"))
+        #expect(sourcesForLast.contains("1"))
+        #expect(sourcesForLast.contains("\(TemporalCausalityFold.maxWindowOccupancy)"))
     }
 
     // MARK: - 2. Single entry

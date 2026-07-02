@@ -54,18 +54,24 @@ public enum MerkleHash {
 
     /// Hash a drawer's content and vectors into a ContentHash.
     ///
-    /// Canonical byte format per ADR-017 §16:
+    /// Canonical byte format per ADR-017 §16 v2:
     /// - MerkleDomain.LEAF (0x00)
     /// - drawer id: 16 bytes big-endian UUID
-    /// - content: u64 BE length prefix + UTF-8 NFC bytes
+    /// - content: u64 BE length prefix + UTF-8 bytes
     /// - vectors: u32 BE count prefix, then each vector sorted by
-    ///   (model_id ascending, vector_index ascending) as IEEE-754 LE
-    ///   floats with a u32 BE per-vector count prefix
+    ///   (modelID ascending, vectorIndex ascending) with per-vector layout:
+    ///   u32 BE modelID-length | modelID UTF-8 bytes | u32 BE vectorIndex |
+    ///   u32 BE float-count | IEEE-754 LE floats
+    ///
+    /// The v2 layout writes vector identity (modelID + vectorIndex) into the
+    /// preimage before the float payload. v1 used these fields only for sort
+    /// order — a binding gap that allowed keyed commitments to accept vector
+    /// substitutions without hash mismatch (security finding WS2-F4).
     ///
     /// - Parameters:
     ///   - drawerId: The drawer's UUID.
     ///   - content: UTF-8 content bytes (caller is responsible for NFC).
-    ///   - vectors: Vector inputs sorted and serialized per the spec.
+    ///   - vectors: Vector inputs sorted and serialized per the v2 spec.
     /// - Returns: The SHA-256 content hash.
     public static func leaf(
         drawerId: UUID,
@@ -156,11 +162,19 @@ public enum MerkleHash {
 
     // MARK: - Canonical byte encoding (shared with KeyedCommitment)
 
-    /// Build the canonical leaf payload bytes per ADR-017 §16.
+    /// Build the canonical leaf payload bytes per ADR-017 §16 v2.
     ///
     /// Shared between MerkleHash.leaf (domain tag 0x00) and
     /// KeyedCommitment.commit (domain tag 0x03) — one encoding,
-    /// two uses.
+    /// two uses. The v2 format writes vector identity (modelID + vectorIndex)
+    /// into the preimage before the float payload, binding the vector's
+    /// provenance to the hash. This prevents vector substitution attacks
+    /// where swapping vectors of the same dimension would not change the
+    /// leaf hash (security finding WS2-F4, fixed 2026-06-28).
+    ///
+    /// Per-vector layout (v2):
+    ///   u32 BE modelID-length | modelID UTF-8 bytes | u32 BE vectorIndex |
+    ///   u32 BE float-count | IEEE-754 LE floats
     static func canonicalLeafBytes(
         drawerId: UUID,
         content: [UInt8],
@@ -176,7 +190,7 @@ public enum MerkleHash {
         appendU64BE(&bytes, UInt64(content.count))
         bytes.append(contentsOf: content)
 
-        // Vectors: sorted by (model_id ascending, vector_index ascending).
+        // Vectors: sorted by (modelID ascending, vectorIndex ascending).
         let sorted = vectors.sorted { a, b in
             if a.modelID != b.modelID { return a.modelID < b.modelID }
             return a.vectorIndex < b.vectorIndex
@@ -186,7 +200,15 @@ public enum MerkleHash {
         appendU32BE(&bytes, UInt32(sorted.count))
 
         for vec in sorted {
-            // Per-vector: u32 BE float count, then IEEE-754 LE floats.
+            // v2 per-vector layout: write identity BEFORE floats so that
+            // substituting a different model's embedding changes the hash.
+            // modelID: u32 BE length prefix + UTF-8 bytes.
+            let modelIDBytes = Array(vec.modelID.utf8)
+            appendU32BE(&bytes, UInt32(modelIDBytes.count))
+            bytes.append(contentsOf: modelIDBytes)
+            // vectorIndex: u32 BE (multi-vector slot; 0 for single-vector models).
+            appendU32BE(&bytes, vec.vectorIndex)
+            // Float payload: u32 BE float count, then IEEE-754 LE floats.
             appendU32BE(&bytes, UInt32(vec.floats.count))
             for f in vec.floats {
                 // IEEE-754 single-precision, little-endian per ADR-017 §16.

@@ -1,12 +1,17 @@
 // VerbsTests.swift
 //
-// Per-type coverage for the nine substrate verbs (cookbook § 10),
+// Per-type coverage for the substrate verb surface (cookbook § 10),
 // the Substrate composition reference in Verbs.swift. Mirrors the
-// behavior set asserted by the Rust `glref-rust-verbs.rs` test
-// module so the two legs pin the same verb semantics:
+// behavior set asserted by the Rust tests in
+// `packages/libs/SubstrateLib/rust/src/verbs.rs` so the two legs
+// pin the same verb semantics:
 //
 //   capture / propose / mutate / withdraw / expunge / recall, plus
 //   gate inside capture.
+//
+// These six verbs are the subset exercised here. Cross-port audit
+// event ID parity (bit-identical content_id across Swift and Rust)
+// lives in AuditGateTests.
 //
 // PORT NOTE: Rust assigns deterministic RowId(u128) values across
 // identical call sequences. Swift assigns random UUID() per capture,
@@ -310,6 +315,33 @@ struct VerbsTests {
 
     // MARK: - withdraw
 
+    // WS2-F5 regression: withdraw must update matrixF and matrixO.
+    // Previously withdraw mutated the adjective bitmap but skipped the
+    // matrix delta, leaving the state-field bucket counts stale.
+    @Test func testWithdrawUpdatesMatrix() {
+        var s = freshSubstrate()
+        guard case .success(let id) = s.capture(
+            nounType: .drawer, adjectiveBitmap: 0, operationalBitmap: 0,
+            provenanceBitmap: 0, latticeAnchor: anchor(), fingerprint: dummyFP,
+            actor: "test") else { Issue.record("expected capture success"); return }
+
+        // Record matrix state after capture.
+        let matrixFBefore = s.matrixF
+        let matrixOBefore = s.matrixO
+
+        // Withdraw the row.
+        guard case .success = s.withdraw(rowId: id, actor: "user")
+        else { Issue.record("expected withdraw success"); return }
+
+        // The matrix must have changed: withdraw moves the state field from
+        // active to withdrawn, which changes the bit-slice bucket counts.
+        // A no-op matrix update (the pre-fix bug) would leave them identical.
+        #expect(s.matrixF != matrixFBefore,
+                "WS2-F5: matrixF must be updated by withdraw")
+        #expect(s.matrixO != matrixOBefore,
+                "WS2-F5: matrixO must be updated by withdraw")
+    }
+
     @Test func testWithdrawActiveToWithdrawn() {
         var s = freshSubstrate()
         guard case .success(let id) = s.capture(
@@ -376,9 +408,9 @@ struct VerbsTests {
     @Test func testVerbAuditEventIdIsDeterministicNotRandom() {
         // After PAR-R2, appendAudit computes a deterministic content-ID
         // via AuditGate.contentID instead of random UUID(). Verify by
-        // capturing in two fresh substrates with the same estate/HLC
-        // and checking that event IDs differ only because row IDs differ
-        // (both are non-nil, non-zero UUIDs from the same hash).
+        // capturing in one fresh substrate, then recomputing the expected
+        // contentID from the same estate/row/HLC fields and checking
+        // that the emitted event ID matches.
         var s = freshSubstrate()
         guard case .success = s.capture(
             nounType: .drawer, adjectiveBitmap: 0, operationalBitmap: 0,
@@ -396,9 +428,11 @@ struct VerbsTests {
     }
 
     @Test func testVerbEventIdSharedVector() {
-        // Shared cross-port vector: known estate, row, HLC, verb,
-        // bitmaps, anchor → known event ID. The Rust test
-        // `content_id_shared_vector` asserts the same u128 value.
+        // Verb-path idempotence: same (estate, row, HLC, verb, bitmaps,
+        // anchor) tuple must produce the same event ID on every call.
+        // Cross-port hex parity — verifying the Swift UUID equals the
+        // Rust u128 for the same wire fields — is asserted in
+        // AuditGateTests.testSharedContentIDVector.
         let estate = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
         let row    = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
         let hlc    = HLC(physicalTime: 7, logicalCount: 0, nodeID: 0)
@@ -406,13 +440,6 @@ struct VerbsTests {
         let eid = AuditGate.contentID(
             estateUuid: estate, rowId: row, hlc: hlc, verb: "mutate",
             after: (0, 2, 0), afterAnchor: anch)
-        // The Rust test uses content_id(1, RowId(2), &hlc(7), "mutate",
-        // (0, 2, 0), anchor()) where anchor() = LatticeAnchor::new(1, 0).
-        // Both ports must produce the same UUID / u128.
-        //
-        // Cross-port hex parity is asserted in AuditGateTests
-        // testSharedContentIDVector. This test verifies verb-path
-        // idempotence only.
         #expect(eid != UUID(), "contentID must be deterministic, not random")
         // Verify idempotence: same inputs → same result.
         let eid2 = AuditGate.contentID(

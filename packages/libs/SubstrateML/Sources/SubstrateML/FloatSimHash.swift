@@ -2,7 +2,7 @@
 //
 // Float-input SimHash for external embedding providers.
 //
-// SubstrateLib's main SimHash (SimHash.swift) operates on bitmap
+// SubstrateTypes's SimHash (SimHash.swift) operates on bitmap
 // subhashes from substrate-native feature extraction. External
 // embedding providers (MiniLM, BERT, EmbeddingGemma) produce
 // dense float vectors; this primitive projects those into the

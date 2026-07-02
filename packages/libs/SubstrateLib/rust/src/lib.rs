@@ -6,9 +6,10 @@
 // mechanics, the row-state automaton, and the audit write-gate.
 //
 // Pure types live in substrate-types, hot-path kernels in
-// substrate-kernel, cold-path / ML algorithms in substrate-ml. Consumers
-// depend on those crates directly; substrate-lib no longer re-exports
-// them (the pub-use bridges were removed when the symbol tail relocated).
+// substrate-kernel, cold-path / ML algorithms in substrate-ml.
+// Compatibility `pub use` bridges in `row_state.rs` and `verbs.rs`
+// keep `crate::verbs::AuditEvent`, `RowState`, `RowVerb`, `NounType`,
+// `LatticeAnchor`, `Row`, and `RowId` resolving without caller churn.
 
 #![allow(clippy::needless_return)]
 #![allow(clippy::too_many_arguments)]

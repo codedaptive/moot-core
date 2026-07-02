@@ -1,8 +1,7 @@
 // verbs.rs
 //
-// The nine substrate verbs per cookbook § 10. Mirror of
-// glref-swift-Verbs.swift. See that file's header for the
-// dependency / composition story.
+// The nine substrate verbs per cookbook § 10. Rust mirror of
+// packages/libs/SubstrateLib/Sources/SubstrateLib/Verbs.swift.
 
 use std::collections::HashMap;
 
@@ -75,8 +74,8 @@ impl std::error::Error for SubstrateError {}
 
 // Phase 6.6 (decision 2026-05-28 §6.6): AuditEvent moved to
 // substrate-types. Re-exported so `crate::verbs::AuditEvent` keeps
-// resolving. NB: glref-rust-sqlite_tail.rs has a DIFFERENT type
-// also named AuditEvent for the persistence tail; that one stays.
+// resolving. The canonical shared type is now in
+// packages/libs/SubstrateTypes/rust/src/audit_event.rs.
 pub use substrate_types::audit_event::AuditEvent;
 
 // ============================================================
@@ -421,6 +420,17 @@ impl Substrate {
         row_mut.state = RowState::Withdrawn;
         row_mut.adjective_bitmap = new_adj;
         let after = (new_adj, before.1, before.2);
+
+        // Matrix update: delta against old vs new bitmaps. Withdraw changes
+        // the state field in the adjective bitmap, so both matrix_f (bit-slice)
+        // and matrix_o (field-value ordinal) must reflect the new state or
+        let before_rb = RowBitmaps::new(before.0, before.1, before.2);
+        self.matrix_f.apply_row(-1, |f, b| before_rb.bit(f, b));
+        self.matrix_o.apply_row(-1, &before_rb.field_values());
+        let after_rb = RowBitmaps::new(after.0, after.1, after.2);
+        self.matrix_f.apply_row(1, |f, b| after_rb.bit(f, b));
+        self.matrix_o.apply_row(1, &after_rb.field_values());
+
         self.append_audit("withdraw", row_id, Some(before), after,
                            Some(lattice_anchor), lattice_anchor, actor);
 
@@ -560,6 +570,14 @@ impl Substrate {
         actor: &str,
         ts: f64,
     ) -> Result<RowId, SubstrateError> {
+        // ADMIN — drop site for the association parameters. `_row_a`,
+        // `_row_b`, `_signal_sources_bitset`, and `_weight` are accepted
+        // and discarded: an Association is a noun-typed row and the
+        // reference persists no endpoint or weight columns (production
+        // adds the FK book-keeping). `_weight` arrives computed free from
+        // the similarity signal's proximity-gate Hamming distance and is
+        // VESTIGIAL past this gate; the parameter is retained on purpose
+        // for a pre-2.0 gauntlet experiment on whether weight improves
         self.capture(
             NounType::Association,
             adjective_bitmap,
@@ -628,7 +646,8 @@ impl Substrate {
             before_lattice_anchor: before_anchor,
             after_lattice_anchor: after_anchor,
             actor: actor.to_string(),
-            // reason is not available at the verbs-test harness layer; None.
+            // `expunge` encodes reason into `actor_with_reason` in the
+            // actor field; the dedicated `reason` field is left None.
             reason: None,
         });
     }
@@ -642,8 +661,8 @@ fn is_legal_row_state(state: RowState, adjective: i64, operational: i64) -> Opti
     let trust = ((adjective >> 18) & 0x3F) as i32;
     let _ = operational;
 
-    // (1) tombstoned must have expunge_completed_flag bit set —
-    // not modeled in the reference; production enforces.
+    // (1) No expunge_completed_flag check — this invariant is not
+    // enforced in the scalar reference implementation.
 
     // (2) secret cannot be public.
     if sensitivity == 48 && exportability == 32 {
@@ -909,5 +928,32 @@ mod tests {
         s.expunge(id2, "r", "a", 0.0).unwrap();
         // All rows removed → F-matrix should be back to all zeros.
         assert_eq!(s.matrix_f.total_count(), 0);
+    }
+
+    // WS2-F5 regression: withdraw must update matrix_f and matrix_o.
+    // Previously withdraw mutated adjective_bitmap but skipped the matrix
+    // delta, leaving state-field bucket counts stale.
+    #[test]
+    fn withdraw_updates_matrix_f_and_o() {
+        let mut s = fresh_substrate();
+        let id = s.capture(NounType::Drawer, 0, 0, 0, anchor(),
+                           dummy_fp(), None, None, "test", 0.0).unwrap();
+        let f_before = s.matrix_f.clone();
+        let o_before = s.matrix_o.clone();
+
+        s.withdraw(id, "user", 0.0).unwrap();
+
+        // Withdraw changes the state field in adjective bits 0-5 (from
+        // 0/active to 18/withdrawn), so matrix_f and matrix_o must differ
+        // from their pre-withdraw snapshots. A no-op delta (the pre-fix bug)
+        // would leave them identical.
+        assert_ne!(
+            s.matrix_f, f_before,
+            "WS2-F5: matrix_f must be updated by withdraw"
+        );
+        assert_ne!(
+            s.matrix_o, o_before,
+            "WS2-F5: matrix_o must be updated by withdraw"
+        );
     }
 }

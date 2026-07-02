@@ -31,9 +31,20 @@ impl SnapshotId {
     }
 
     /// Parse from a UUID string (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).
+    ///
+    /// Returns `Err` on non-ASCII input or any character that is not a hex
+    /// digit or '-'.  Slicing a `str` at byte indices panics when the indices
+    /// do not fall on UTF-8 character boundaries; rejecting non-ASCII input up
+    /// front prevents that panic (a valid UUID string is always pure ASCII).
     pub fn from_uuid_string(s: &str) -> Result<Self, SnapshotIdError> {
         let hex: String = s.chars().filter(|c| *c != '-').collect();
         if hex.len() != 32 {
+            return Err(SnapshotIdError::InvalidUUID(s.to_string()));
+        }
+        // Reject non-ASCII before byte-slicing: a multi-byte UTF-8 character
+        // in `hex` makes hex.len() count bytes rather than characters, so
+        // hex[i*2..i*2+2] could panic on a mid-codepoint boundary.
+        if !hex.is_ascii() {
             return Err(SnapshotIdError::InvalidUUID(s.to_string()));
         }
         let mut bytes = [0u8; 16];
@@ -119,5 +130,28 @@ mod tests {
     #[test]
     fn invalid_uuid_string() {
         assert!(SnapshotId::from_uuid_string("not-a-uuid").is_err());
+    }
+
+    #[test]
+    fn non_ascii_input_returns_error_not_panic() {
+        // A UUID-shaped string that contains a multi-byte UTF-8 character
+        // after dash-filtering.  Before the fix, hex[i*2..i*2+2] would panic
+        // on a non-char-boundary when the post-filter string's byte length is
+        // 32 but character count is less than 32.
+        //
+        // "£" (U+00A3) is two bytes.  Replacing the final two hex chars with
+        // "£" gives a 32-byte string (30 ASCII bytes + 2-byte £) that passes
+        // the len() == 32 guard but must not panic.
+        let non_ascii = "00000000000000000000000000000".to_string() + "£"; // 29 + 2 = 31 bytes …
+        // Ensure the test string does trigger the non-ASCII path by explicitly
+        // using a full 32-byte case:
+        let padded = "0000000000000000000000000000000".to_string() + "£"; // 31 + 2 = 33 bytes
+        // len() != 32 → InvalidUUID (the length guard fires first). That is
+        // also safe. Let's test the exact 32-byte case instead:
+        // 30 ASCII chars + '£' (2 bytes) = 32 bytes — triggers is_ascii check.
+        let exact = "00".repeat(15) + "£"; // 30 + 2 = 32 bytes
+        assert_eq!(exact.len(), 32, "test setup: byte length must be 32");
+        assert!(SnapshotId::from_uuid_string(&exact).is_err());
+        let _ = (non_ascii, padded); // suppress unused warnings
     }
 }

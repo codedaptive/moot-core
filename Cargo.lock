@@ -143,6 +143,11 @@ dependencies = [
 [[package]]
 name = "substrate-types"
 version = "1.0.0-skeleton"
+dependencies = [
+ "serde",
+ "serde-big-array",
+ "serde_repr",
+]
 
 [[package]]
 name = "syn"

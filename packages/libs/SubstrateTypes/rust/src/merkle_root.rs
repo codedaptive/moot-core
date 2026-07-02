@@ -53,9 +53,22 @@ impl MerkleRoot {
     }
 
     /// Construct from a 64-character hex string.
+    ///
+    /// Returns `Err(InvalidHexCharacter)` on non-ASCII input.  Slicing a
+    /// `str` at byte indices panics when the indices do not fall on UTF-8
+    /// character boundaries; rejecting non-ASCII input up front prevents that
+    /// panic without any other behaviour change (a valid hex string is always
+    /// pure ASCII).
     pub fn from_hex(hex: &str) -> Result<Self, MerkleRootError> {
         if hex.len() != 64 {
             return Err(MerkleRootError::InvalidHexLength(hex.len()));
+        }
+        // Reject non-ASCII before byte-slicing: a multi-byte UTF-8 character
+        // can make hex.len() == 64 (bytes) while the string has fewer than 64
+        // characters, causing hex[i*2..i*2+2] to panic on a mid-codepoint
+        // boundary.
+        if !hex.is_ascii() {
+            return Err(MerkleRootError::InvalidHexCharacter);
         }
         let mut bytes = [0u8; 32];
         for i in 0..32 {
@@ -165,5 +178,19 @@ mod tests {
             ContentHash::TOMBSTONE.bytes().as_slice(),
             MerkleRoot::EMPTY.bytes().as_slice(),
         );
+    }
+
+    #[test]
+    fn non_ascii_input_returns_error_not_panic() {
+        // A string whose byte length is 64 but whose characters include a
+        // multi-byte UTF-8 codepoint (the two-byte '£', U+00A3).  Before the
+        // fix, hex[i*2..i*2+2] would panic on a non-char-boundary; now it
+        // must return Err rather than panic.
+        let non_ascii = "00".repeat(31) + "£"; // 62 + 2 = 64 bytes, passes len check
+        assert_eq!(non_ascii.len(), 64, "test setup: byte length must be 64");
+        assert!(matches!(
+            MerkleRoot::from_hex(&non_ascii),
+            Err(MerkleRootError::InvalidHexCharacter)
+        ));
     }
 }

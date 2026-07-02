@@ -1,7 +1,10 @@
-//! substrate-types — Layer 1 of the three-package SubstrateLib split
+//! substrate-types — Layer 1 of the four-package SubstrateLib split
 //! (cookbook v1.0 §20, I-30; decision 2026-05-28 §6 Phase 6).
 //!
-//! Pure data types — no compute, no transcendentals, no I/O.
+//! Primarily data types; also exports canonical reference compute
+//! modules (hamming, simhash, fnv, or_reduce, bitwise) and
+//! HLCGenerator that are logically inseparable from the types
+//! they extend.
 
 pub mod as_of_coordinate;
 pub mod audit_event;

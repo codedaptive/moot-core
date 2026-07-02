@@ -83,6 +83,81 @@ struct MerkleHashLeafTests {
                                          floats: [1.0])])
         #expect(noVecs != withVecs, "adding vectors must change the hash")
     }
+
+    // WS2-F4 security regression tests — v2 identity binding.
+    // These tests verify that the v2 canonical leaf encoding binds vector
+    // identity (modelID + vectorIndex) into the preimage, so swapping a
+    // vector from a different model or slot changes the leaf hash.
+
+    @Test("v2 binding: different modelID produces different hash")
+    func v2BindingModelIDChangesHash() {
+        // Same floats, different modelID — must produce different hash.
+        let h1 = MerkleHash.leaf(
+            drawerId: testUUID,
+            content: Array("test".utf8),
+            vectors: [MerkleVectorInput(modelID: "model-a", vectorIndex: 0,
+                                         floats: [1.0, 2.0, 3.0])])
+        let h2 = MerkleHash.leaf(
+            drawerId: testUUID,
+            content: Array("test".utf8),
+            vectors: [MerkleVectorInput(modelID: "model-b", vectorIndex: 0,
+                                         floats: [1.0, 2.0, 3.0])])
+        #expect(h1 != h2,
+                "v2 identity binding: same floats with different modelID must change the hash")
+    }
+
+    @Test("v2 binding: different vectorIndex produces different hash")
+    func v2BindingVectorIndexChangesHash() {
+        // Same floats, same modelID, different vectorIndex — must produce different hash.
+        let h1 = MerkleHash.leaf(
+            drawerId: testUUID,
+            content: Array("test".utf8),
+            vectors: [MerkleVectorInput(modelID: "model-a", vectorIndex: 0,
+                                         floats: [1.0, 2.0, 3.0])])
+        let h2 = MerkleHash.leaf(
+            drawerId: testUUID,
+            content: Array("test".utf8),
+            vectors: [MerkleVectorInput(modelID: "model-a", vectorIndex: 1,
+                                         floats: [1.0, 2.0, 3.0])])
+        #expect(h1 != h2,
+                "v2 identity binding: same floats with different vectorIndex must change the hash")
+    }
+
+    @Test("v2 binding: cross-port conformance vector (pinned)")
+    func v2CrossPortConformanceVector() {
+        // Pinned SHA-256 of v2 canonical leaf encoding for the shared
+        // cross-port conformance vector. Both Swift and Rust must produce
+        // this exact value. Seed: drawer 12345678-1234-1234-1234-123456789ABC,
+        // content "hello", one vector model-a/idx=0/[1.0, 2.0].
+        //
+        // Derivation (v2 layout):
+        //   domain tag: 0x00
+        //   drawer id: 12 34 56 78 12 34 12 34 12 34 12 34 56 78 9a bc
+        //   content len: 00 00 00 00 00 00 00 05
+        //   content: 68 65 6c 6c 6f
+        //   vector count: 00 00 00 01
+        //   model_id len: 00 00 00 07
+        //   model_id: 6d 6f 64 65 6c 2d 61
+        //   vector_index: 00 00 00 00
+        //   float count: 00 00 00 02
+        //   float[0] 1.0f: 00 00 80 3f (LE)
+        //   float[1] 2.0f: 00 00 00 40 (LE)
+        //
+        // The expected hex is computed by sha256(above preimage).
+        // Run `swift test --filter v2CrossPortConformanceVector -- dump` to capture.
+        // Pinned hash value: SHA-256 of v2 preimage described above.
+        // Identical to Rust test v2_cross_port_conformance_vector — byte-identical
+        // across ports is the conformance gate.
+        let expectedHex = "cb18e8a5dcff4eb955f731bf75c078b9390a175ff225cc67a1ff0f1d3fa192dc"
+        let hash = MerkleHash.leaf(
+            drawerId: UUID(uuidString: "12345678-1234-1234-1234-123456789ABC")!,
+            content: Array("hello".utf8),
+            vectors: [MerkleVectorInput(modelID: "model-a", vectorIndex: 0,
+                                         floats: [1.0, 2.0])])
+        let hex = hash.bytes.map { String(format: "%02x", $0) }.joined()
+        #expect(hex == expectedHex,
+                "v2 cross-port conformance vector mismatch — Swift and Rust must agree byte-for-byte")
+    }
 }
 
 @Suite("MerkleHash — interior hash pipeline")

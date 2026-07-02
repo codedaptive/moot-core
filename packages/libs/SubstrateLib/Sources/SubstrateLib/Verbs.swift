@@ -13,14 +13,13 @@
 //   3. Emits an audit event (§ 5) under the current HLC.
 //   4. Updates derived state (matrix tier § 6; fingerprint
 //      recompute via § 3.6).
-//   5. Returns Result<RowId, SubstrateError>.
+//   5. Return shapes vary: `capture`, `propose`, `associate`, and
+//      `learn` return `Result<RowId, SubstrateError>`; `reanchor`,
+//      `mutate`, `withdraw`, and `expunge` return
+//      `Result<(), SubstrateError>`; `recall` returns `[Row]`.
 //
-// This file is the COMPOSITION REFERENCE. It assumes the prior
-// reference files are wired in as a package:
-//   - glref-swift-Fingerprint256, HyperplaneFamily, SimHash
-//   - glref-swift-HLC, GSetAuditLog
-//   - glref-swift-RowStateAutomaton
-//   - glref-swift-MatrixF, MatrixC, MatrixO, MatrixT
+// This file is the verb orchestration layer. It imports the live
+// `SubstrateTypes` package and this directory's own `RowStateAutomaton`.
 //
 // Production substrates re-implement the verb dispatch with
 // platform-appropriate persistence (SQLite tail, mmap'd bit-slice
@@ -318,9 +317,37 @@ public struct Substrate {
         row.state = .withdrawn
         row.adjectiveBitmap = setStateField(row.adjectiveBitmap, to: 18)
         rows[rowId] = row
+        let after = (row.adjectiveBitmap, row.operationalBitmap, row.provenanceBitmap)
+
+        // Matrix update: delta against old vs new bitmaps. Withdraw changes
+        // the state field in the adjective bitmap, so both MatrixF (bit-slice)
+        // and MatrixO (field-value ordinal) must reflect the new state or
+        do {
+            var f = self.matrixF
+            let beforeRowBitmaps = RowBitmaps(
+                adjective: before.0,
+                operational: before.1,
+                provenance: before.2)
+            f.applyRow(delta: -1, bitVector: beforeRowBitmaps.bitVector())
+            let afterRowBitmaps = RowBitmaps(
+                adjective: after.0,
+                operational: after.1,
+                provenance: after.2)
+            f.applyRow(delta: 1, bitVector: afterRowBitmaps.bitVector())
+            self.matrixF = f
+        }
+        matrixO.applyRow(delta: -1,
+                          fieldValues: extractFieldValues(adj: before.0,
+                                                            op: before.1,
+                                                            prov: before.2))
+        matrixO.applyRow(delta: 1,
+                          fieldValues: extractFieldValues(adj: after.0,
+                                                            op: after.1,
+                                                            prov: after.2))
+
         appendAudit(verb: "withdraw", rowId: rowId,
                      before: before,
-                     after: (row.adjectiveBitmap, row.operationalBitmap, row.provenanceBitmap),
+                     after: after,
                      beforeAnchor: row.latticeAnchor, afterAnchor: row.latticeAnchor,
                      actor: actor)
 
@@ -433,15 +460,20 @@ public struct Substrate {
         provenanceBitmap: Int64,
         latticeAnchor: LatticeAnchor,
         fingerprint: Fingerprint256,
-        actor: String = "mcp_agent"
+        actor: String = "mcp_agent",
+        ts: Double = 0.0
     ) -> Result<UUID, SubstrateError> {
+        // Thread ts through to capture so the telemetry timestamp is the
+        // caller-supplied wall time rather than always 0.0 (Rust already
+        // carries ts through all nine verb paths; this closes the parity gap).
         return capture(nounType: .proposal,
                         adjectiveBitmap: adjectiveBitmap,
                         operationalBitmap: operationalBitmap,
                         provenanceBitmap: provenanceBitmap,
                         latticeAnchor: latticeAnchor,
                         fingerprint: fingerprint,
-                        actor: actor)
+                        actor: actor,
+                        ts: ts)
     }
 
     // ============================================================
@@ -458,7 +490,8 @@ public struct Substrate {
         provenanceBitmap: Int64,
         latticeAnchor: LatticeAnchor,
         fingerprint: Fingerprint256,
-        actor: String = "dreaming_daemon"
+        actor: String = "dreaming_daemon",
+        ts: Double = 0.0
     ) -> Result<UUID, SubstrateError> {
         // Reference: an Association is just a noun-typed row.
         // The signal_sources_seen bitset and the endpoint refs
@@ -467,14 +500,27 @@ public struct Substrate {
         // would also include foreign-key columns to rowA/rowB.
         // The reference encodes this as raw arguments; production
         // adds the FK book-keeping.
+        //
+        // ADMIN — drop site for `weight`. It arrives computed (the vector
+        // similarity signal derives it free from the proximity-gate
+        // Hamming distance) but is VESTIGIAL past this gate: an
+        // association row carries no weight column, so the value is not
+        // persisted. The parameter stays on the signature on purpose — a
+        // pre-2.0 gauntlet experiment will test whether feeding weight
+        // into recall improves results. Until that runs it is accepted
+        // and discarded, never silently fabricated.
         _ = rowA; _ = rowB; _ = signalSourcesBitset; _ = weight
+        // Thread ts through to capture so the telemetry timestamp is the
+        // caller-supplied wall time (Rust already carries ts through all nine
+        // verb paths; this closes the parity gap).
         return capture(nounType: .association,
                         adjectiveBitmap: adjectiveBitmap,
                         operationalBitmap: operationalBitmap,
                         provenanceBitmap: provenanceBitmap,
                         latticeAnchor: latticeAnchor,
                         fingerprint: fingerprint,
-                        actor: actor)
+                        actor: actor,
+                        ts: ts)
     }
 
     // ============================================================
@@ -488,15 +534,20 @@ public struct Substrate {
         provenanceBitmap: Int64,
         latticeAnchor: LatticeAnchor,
         fingerprint: Fingerprint256,
-        actor: String = "learn"
+        actor: String = "learn",
+        ts: Double = 0.0
     ) -> Result<UUID, SubstrateError> {
+        // Thread ts through to capture so the telemetry timestamp is the
+        // caller-supplied wall time (Rust already carries ts through all nine
+        // verb paths; this closes the parity gap).
         return capture(nounType: .learnedReference,
                         adjectiveBitmap: adjectiveBitmap,
                         operationalBitmap: operationalBitmap,
                         provenanceBitmap: provenanceBitmap,
                         latticeAnchor: latticeAnchor,
                         fingerprint: fingerprint,
-                        actor: actor)
+                        actor: actor,
+                        ts: ts)
     }
 
     // MARK: - Internals
@@ -592,9 +643,9 @@ public struct Substrate {
 
 // MARK: - Type dependencies
 //
-// RowStateAutomaton, MatrixF, MatrixO, MatrixT, HLC, and Fingerprint256
-// are imported from the sibling SubstrateTypes package. This file
-// compiles inside SubstrateLib and resolves them through that dependency.
+// MatrixF, MatrixO, MatrixT, HLC, and Fingerprint256 are imported from
+// the sibling SubstrateTypes package. RowStateAutomaton is defined
+// locally in this SubstrateLib source directory.
 
 // MARK: - Verb properties (informally verified)
 //

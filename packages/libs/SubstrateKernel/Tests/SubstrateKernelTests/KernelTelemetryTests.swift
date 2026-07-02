@@ -2,8 +2,8 @@
 //
 // PortableKernel.kernelForCurrentPlatform() in SUBSTRATE_REPORT_001.
 //
-// Mirrors the Rust test module in
-// rust/tests/kernel_telemetry_tests.rs.
+// Mirrors the core Rust telemetry sections in
+// rust/tests/kernel_telemetry_tests.rs, and adds the Swift
 //
 // §1 Disabled gate: with monitoring OFF, no metric is emitted and
 //    the factory still returns the correct kernel.
