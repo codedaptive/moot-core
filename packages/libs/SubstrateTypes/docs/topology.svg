@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+doc: topology
+package: SubstrateTypes
+repo: moot-core
+authored_commit: b2a5c30b794cf477e18022c55e2fea348614d337
+authored_date: 2026-07-04
+sources:
+  - path: Sources/SubstrateTypes/Row.swift
+    blob: d7cf86f774dbccbbdf9daf1f3a5ed9be29fb24e8
+  - path: Sources/SubstrateTypes/LatticeAnchor.swift
+    blob: 5f3ba24efa5a85109d20f3b61e6acb17e21cb0a5
+  - path: Sources/SubstrateTypes/NounType.swift
+    blob: 940d6c51329a66849e572a95ff8ae51648784f2f
+  - path: Sources/SubstrateTypes/RowState.swift
+    blob: 3f8c772be1fe1e3b44b90a5ea8681d4ce4326db7
+  - path: Sources/SubstrateTypes/RowBitmaps.swift
+    blob: b879191a7076807c6fcd20e54cf806a639e63388
+  - path: Sources/SubstrateTypes/HyperplaneFamily.swift
+    blob: f30c4640629116b1952df48790ed6f5ae67e9025
+  - path: Sources/SubstrateTypes/SimHash.swift
+    blob: e32a8b685c3db29408ed9e7fb21da4a7da10c467
+  - path: Sources/SubstrateTypes/Fingerprint256.swift
+    blob: 465607fe4164bb0dd94009dbbb20d6e766b973a8
+  - path: Sources/SubstrateTypes/Hamming.swift
+    blob: dc899742f77434910d51bb3cd830cc9603f56f0a
+  - path: Sources/SubstrateTypes/BitwiseArithmetic.swift
+    blob: a6270b0f7395c17915c54fdc119e854ca5a44077
+  - path: Sources/SubstrateTypes/ORReduce.swift
+    blob: 3f9f6e6ed30fb233f48457f95047f274bd271745
+  - path: Sources/SubstrateTypes/CountVector256.swift
+    blob: edabb34cb02005135d745ffa6da5541835159927
+  - path: Sources/SubstrateTypes/HLC.swift
+    blob: a74442251bd542e8f403029ee475c2ac9d7b91b0
+  - path: Sources/SubstrateTypes/TimeRange.swift
+    blob: e1b7fbed94b6505b596ac5701cfd7c693e7d2425
+  - path: Sources/SubstrateTypes/AsOfCoordinate.swift
+    blob: b4433864e36b5803533266c97b153a836ee04adb
+  - path: Sources/SubstrateTypes/MatrixF.swift
+    blob: ed6e38a78c654562b04074878bf86686da0172c3
+  - path: Sources/SubstrateTypes/MatrixC.swift
+    blob: a8612ea7b09e6d4d93a4acbeedbe2b3b91776a74
+  - path: Sources/SubstrateTypes/MatrixO.swift
+    blob: c10fa0b14d8abd172503d0375dfab9302da32025
+  - path: Sources/SubstrateTypes/MatrixT.swift
+    blob: cd31ca818be6446f8f1cd98c6b912c640a78c613
+  - path: Sources/SubstrateTypes/AuditEvent.swift
+    blob: fbfabeb4eaba4bf43b6e45d8c2b772d994a12b7b
+  - path: Sources/SubstrateTypes/GSetAuditLog.swift
+    blob: 1a4452e4c8a147d4fac299a3319b0cb4e70cb795
+  - path: Sources/SubstrateTypes/ContentHash.swift
+    blob: 835744792dc191e824e676d8715c96111b4945ff
+  - path: Sources/SubstrateTypes/MerkleRoot.swift
+    blob: 1979925f4646cdbed8785a43e2f2a14a7f9c0cac
+  - path: Sources/SubstrateTypes/MerkleDomain.swift
+    blob: 4e7d1888a04b2e9979e62c58b54ba698712e56d5
+  - path: Sources/SubstrateTypes/RecallTypes.swift
+    blob: 7f01133df8495156fab87f1f4e441fb7867b3434
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <style>
+    .box   { fill: #ffffff; stroke: #333; stroke-width: 1.5; }
+    .label { font-size: 13px; fill: #111; }
+    .sub   { font-size: 10.5px; fill: #555; }
+    .flow  { stroke: #333; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+    .derive{ stroke: #888; stroke-width: 1.2; fill: none; marker-end: url(#arrow); stroke-dasharray: 5 3; opacity: 0.65; }
+    .region { fill: none; stroke: #999; stroke-width: 1.2; stroke-dasharray: 7 4; }
+    .regionlabel { font-size: 11px; fill: #777; font-style: italic; }
+  </style>
+
+  <!-- Title -->
+  <text x="20" y="28" font-size="15" font-weight="bold" fill="#111">SubstrateTypes: row shape, coordinates, and the views derived from them</text>
+
+  <!-- Row 1: fingerprint construction + algebra -->
+  <rect class="box" x="20" y="60" width="150" height="54" rx="6"/>
+  <text class="label" x="95" y="82" text-anchor="middle">HyperplaneFamily</text>
+  <text class="sub" x="95" y="98" text-anchor="middle">64 fixed ±1 planes</text>
+
+  <rect class="box" x="200" y="60" width="110" height="54" rx="6"/>
+  <text class="label" x="255" y="82" text-anchor="middle">SimHash</text>
+  <text class="sub" x="255" y="98" text-anchor="middle">sign(&lt;v,h&gt;) per block</text>
+
+  <rect class="box" x="340" y="60" width="140" height="54" rx="6"/>
+  <text class="label" x="410" y="82" text-anchor="middle">Fingerprint256</text>
+  <text class="sub" x="410" y="98" text-anchor="middle">4×64-bit structural code</text>
+
+  <rect class="box" x="510" y="60" width="190" height="54" rx="6"/>
+  <text class="label" x="605" y="82" text-anchor="middle">Fingerprint algebra</text>
+  <text class="sub" x="605" y="98" text-anchor="middle">Hamming · Bitwise · OR · CountVector</text>
+
+  <line class="flow" x1="170" y1="87" x2="198" y2="87"/>
+  <line class="flow" x1="310" y1="87" x2="338" y2="87"/>
+  <line class="flow" x1="480" y1="87" x2="508" y2="87"/>
+
+  <!-- Row 2: row shape + coordinates -->
+  <rect class="box" x="20" y="190" width="140" height="54" rx="6"/>
+  <text class="label" x="90" y="212" text-anchor="middle">LatticeAnchor</text>
+  <text class="sub" x="90" y="228" text-anchor="middle">topic coordinate</text>
+
+  <rect class="box" x="200" y="190" width="110" height="54" rx="6"/>
+  <text class="label" x="255" y="212" text-anchor="middle">Row</text>
+  <text class="sub" x="255" y="228" text-anchor="middle">the substrate unit</text>
+
+  <rect class="box" x="340" y="190" width="170" height="54" rx="6"/>
+  <text class="label" x="425" y="212" text-anchor="middle">Row lifecycle + layout</text>
+  <text class="sub" x="425" y="228" text-anchor="middle">NounType · RowState · RowBitmaps</text>
+
+  <rect class="box" x="540" y="190" width="180" height="54" rx="6"/>
+  <text class="label" x="630" y="212" text-anchor="middle">Temporal coordinates</text>
+  <text class="sub" x="630" y="228" text-anchor="middle">HLC · TimeRange · AsOfCoordinate</text>
+
+  <!-- Fingerprint feeds into Row; LatticeAnchor and lifecycle box compose with Row -->
+  <line class="flow" x1="400" y1="114" x2="270" y2="188"/>
+  <text class="sub" x="330" y="150">row.fingerprint</text>
+
+  <line class="flow" x1="160" y1="217" x2="198" y2="217"/>
+  <text class="sub" x="163" y="210">row.latticeAnchor</text>
+
+  <line class="flow" x1="310" y1="217" x2="338" y2="217"/>
+  <text class="sub" x="313" y="210">row.state / .bitmaps</text>
+
+  <!-- Estate-level derived views region -->
+  <rect class="region" x="10" y="320" width="730" height="110"/>
+  <text class="regionlabel" x="20" y="338">Estate-level views (derived from many rows, not stored on one row)</text>
+
+  <rect class="box" x="20" y="350" width="170" height="54" rx="6"/>
+  <text class="label" x="105" y="372" text-anchor="middle">Population matrices</text>
+  <text class="sub" x="105" y="388" text-anchor="middle">MatrixF · MatrixC · MatrixO · MatrixT</text>
+
+  <rect class="box" x="210" y="350" width="160" height="54" rx="6"/>
+  <text class="label" x="290" y="372" text-anchor="middle">Audit trail (CRDT)</text>
+  <text class="sub" x="290" y="388" text-anchor="middle">AuditEvent · GSetAuditLog</text>
+
+  <rect class="box" x="390" y="350" width="170" height="54" rx="6"/>
+  <text class="label" x="475" y="372" text-anchor="middle">Integrity hashes</text>
+  <text class="sub" x="475" y="388" text-anchor="middle">ContentHash · MerkleRoot</text>
+
+  <rect class="box" x="580" y="350" width="150" height="54" rx="6"/>
+  <text class="label" x="655" y="372" text-anchor="middle">Recall vocabulary</text>
+  <text class="sub" x="655" y="388" text-anchor="middle">RecallResult · RowProjection</text>
+
+  <!-- Derived-from arrows (dashed, secondary) -->
+  <line class="derive" x1="400" y1="244" x2="120" y2="348"/>
+  <line class="derive" x1="255" y1="244" x2="280" y2="348"/>
+  <line class="derive" x1="630" y1="244" x2="320" y2="348"/>
+  <line class="derive" x1="270" y1="244" x2="460" y2="348"/>
+  <line class="derive" x1="290" y1="244" x2="640" y2="348"/>
+
+  <!-- Legend -->
+  <line class="flow" x1="770" y1="240" x2="800" y2="240"/>
+  <text class="sub" x="806" y="244">composes / produces</text>
+  <line class="derive" x1="770" y1="260" x2="800" y2="260"/>
+  <text class="sub" x="806" y="264">read by / derived from</text>
+</svg>
