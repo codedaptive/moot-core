@@ -125,6 +125,13 @@ impl serde::Serialize for GSetAuditLog {
     }
 }
 
+// and `AuditEntry` has no wire-bytes encoder or SHA-256 hash function in
+// this crate, so content-id verification is not possible in the Deserialize
+// impl below. When this type is wired (federation v1.1), the
+// Deserialize path MUST recompute the SHA-256 content id from the entry's
+// wire encoding and reject same-id/different-content collisions — the same
+// defence now applied to the live `UnifiedAuditLog` in GeniusLocusKit
+// verification on every ingress path.
 #[cfg(feature = "serde-support")]
 impl<'de> serde::Deserialize<'de> for GSetAuditLog {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
@@ -228,6 +235,12 @@ impl GSetAuditLog {
 
     /// Add a single entry. Idempotent: re-adding an entry with
     /// the same content hash is a no-op.
+    ///
+    /// consumer and `AuditEntry` has no wire-bytes encoder in this crate,
+    /// so content-id verification is not performed here. When wired for
+    /// federation, this method MUST recompute the SHA-256 content id and
+    /// reject same-id/different-content collisions — the same defence
+    /// applied to the live `UnifiedAuditLog` in GeniusLocusKit.
     pub fn add(&mut self, entry: AuditEntry) {
         self.entries.insert(entry.id, entry);
     }
@@ -235,6 +248,13 @@ impl GSetAuditLog {
     /// CRDT join. Merging two G-Sets is set union of entries.
     /// Commutative, associative, idempotent — the three CRDT
     /// properties that guarantee convergence.
+    ///
+    /// consumer and `AuditEntry` has no wire-bytes encoder in this crate,
+    /// so content-id verification is not performed here. When wired for
+    /// federation, this method MUST recompute the SHA-256 content id on
+    /// every ingress entry and reject same-id/different-content collisions
+    /// — the same defence applied to the live `UnifiedAuditLog` in
+    /// GeniusLocusKit.
     pub fn merge(&mut self, other: &GSetAuditLog) {
         for (id, entry) in &other.entries {
             self.entries.insert(*id, entry.clone());

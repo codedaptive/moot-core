@@ -2,7 +2,7 @@
 # Publish Report
 
 Venue: `moot-core`
-Source commit: `aa4eee3f5c75357f2db7769f1a1a50dcfa808ea1`
+Source commit: `cc4e5ad00098d950deba594d75d77eec299dd797`
 
 ## Loaded Packages
 
@@ -91,6 +91,7 @@ Removed internal/process comment lines:
 - `packages/libs/SubstrateML/rust/tests/viz_graph_signals_tests.rs`: 2 line(s)
 - `packages/libs/SubstrateTypes/Sources/SubstrateTypes/BlockMask.swift`: 1 line(s)
 - `packages/libs/SubstrateTypes/Sources/SubstrateTypes/CountVector256.swift`: 1 line(s)
+- `packages/libs/SubstrateTypes/Sources/SubstrateTypes/GSetAuditLog.swift`: 4 line(s)
 - `packages/libs/SubstrateTypes/Sources/SubstrateTypes/HLC.swift`: 2 line(s)
 - `packages/libs/SubstrateTypes/Sources/SubstrateTypes/LatticeAnchor.swift`: 1 line(s)
 - `packages/libs/SubstrateTypes/Sources/SubstrateTypes/RecallTypes.swift`: 1 line(s)
@@ -99,7 +100,7 @@ Removed internal/process comment lines:
 - `packages/libs/SubstrateTypes/Tests/SubstrateTypesTests/CountVector256Tests.swift`: 1 line(s)
 - `packages/libs/SubstrateTypes/Tests/SubstrateTypesTests/Fingerprint256CombinatorsTests.swift`: 1 line(s)
 - `packages/libs/SubstrateTypes/rust/src/block_mask.rs`: 4 line(s)
-- `packages/libs/SubstrateTypes/rust/src/gset.rs`: 1 line(s)
+- `packages/libs/SubstrateTypes/rust/src/gset.rs`: 5 line(s)
 - `packages/libs/SubstrateTypes/rust/src/lattice_anchor.rs`: 1 line(s)
 - `packages/libs/SubstrateTypes/rust/src/recall_types.rs`: 11 line(s)
 - `packages/libs/SubstrateTypes/rust/src/row_bitmaps.rs`: 10 line(s)
@@ -116,6 +117,6 @@ Rewritten cross-venue Cargo dependencies:
 Mechanical publish: source export, comment scrubbing, provenance generation,
 cross-venue Cargo dependency rewriting, root SwiftPM manifest generation, root
 Cargo workspace generation, changelog entry, commit, lockstep `v` tag, and
-push. Cross-venue dependencies reference `main`; version-pinned cross-venue
-dependencies, precompiled binary artifacts, generated API reference docs, and
-full conformance-test certification are later publisher phases.
+push. Cross-venue dependencies are pinned to the lockstep `v` tag;
+precompiled binary artifacts, generated API reference docs, and full
+conformance-test certification are later publisher phases.
