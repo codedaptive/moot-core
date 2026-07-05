@@ -24,7 +24,7 @@ sources:
   - path: Sources/SubstrateTypes/FNV.swift
     blob: f3d8874705ad66f513e49ccbf0c714980a1172e8
   - path: Sources/SubstrateTypes/GSetAuditLog.swift
-    blob: 1a4452e4c8a147d4fac299a3319b0cb4e70cb795
+    blob: 46508e5af2a855b29ec45b4e02635477e3460544
   - path: Sources/SubstrateTypes/Hamming.swift
     blob: dc899742f77434910d51bb3cd830cc9603f56f0a
   - path: Sources/SubstrateTypes/HLC.swift
