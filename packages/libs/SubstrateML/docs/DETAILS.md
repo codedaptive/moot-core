@@ -44,7 +44,7 @@ sources:
   - path: Sources/SubstrateML/InformationTheory.swift
     blob: f7ba2a27904ceb19eef0fb5b06d1c5aad8b3894b
   - path: Sources/SubstrateML/JacobiSVD.swift
-    blob: fcd924ff0a8409f224b56e7229f59659a6b5f51e
+    blob: ca87cf2e57a5469b950ab46f4951ca3a05c1c864
   - path: Sources/SubstrateML/LatticeDistance.swift
     blob: a7b96a376dfba0c815e4dc91962da1ccaeb2ac1d
   - path: Sources/SubstrateML/LLMCalibrationCurve.swift
@@ -724,26 +724,37 @@ term-document matrix into low-dimensional semantic embeddings, for
 latent semantic analysis in CorpusKit.
 
 SVD factors a matrix into rotation, scaling, and rotation:
-`A = U S Vᵀ`. The implementation is one-sided cyclic Jacobi. It
-repeatedly applies two-by-two planar rotations to each pair of
-columns, in a fixed cyclic order. It accumulates the rotations into
-V. After the sweeps, the column norms become the singular values.
-The normalized columns become U. A sign convention forces the
-largest-magnitude entry of each left vector positive. This removes
-the inherent plus-minus ambiguity.
+`A = U S Vᵀ`. The implementation is one-sided Jacobi. Each sweep
+walks a tournament schedule of rounds, not the old fixed
+lexicographic order. Within a round every column pair is disjoint,
+so the round's rotations touch no shared column. The implementation
+applies two-by-two planar rotations to each pair and accumulates the
+rotations into V. After the sweeps, the column norms become the
+singular values. The normalized columns become U. A sign convention
+forces the largest-magnitude entry of each left vector positive.
+This removes the inherent plus-minus ambiguity.
 
 Each convergence-affecting choice is pinned, for cross-port
 bit-identity. That is why this exists instead of a call to
 Accelerate or LAPACK. The sweep count is fixed, at a default of 30,
-and is not convergence-tested. The rotation order is fixed. All
-arithmetic is scalar Float32, with no SIMD and no fused
-multiply-add. The rotation formula in `jacobiCS(alpha:beta:gamma:)`
-keeps a pinned expression tree that must not be refactored.
-`decompose(A:rank:sweeps:)` requires at least as many rows as
-columns. It returns an `SVDResult`: U, non-increasing singular
-values, Vt, and rank. The sweep loops use unsafe buffer pointers,
-for the same documented vectorization reason as the NMF engine.
-Each index is derived from loop bounds, never from data.
+and is not convergence-tested. The tournament schedule is a pure
+integer function of n. The Rust port twins it exactly in
+`JacobiSvd::tournament_rounds`. A shared schedule hash pins both
+ports to the identical round order. Cross-port bit-identity holds
+exactly as it did under the old lexicographic order. Because a
+round's pairs are disjoint, its rotations commute. They may run on
+any number of threads with bit-identical output. Output never
+depends on thread count. A dense factorization over many columns
+once pinned one core for minutes. The tournament order now runs many
+rotations at once. All arithmetic is scalar Float32, with no SIMD
+and no fused multiply-add. The rotation formula in
+`jacobiCS(alpha:beta:gamma:)` keeps a pinned expression tree that
+must not be refactored. `decompose(A:rank:sweeps:)` requires at
+least as many rows as columns. It returns an `SVDResult`: U,
+non-increasing singular values, Vt, and rank. The sweep loops use
+unsafe buffer pointers, for the same documented vectorization reason
+as the NMF engine. Each index is derived from loop bounds, never
+from data.
 
 ## FFT.swift
 

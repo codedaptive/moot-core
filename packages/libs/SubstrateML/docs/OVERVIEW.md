@@ -44,7 +44,7 @@ sources:
   - path: Sources/SubstrateML/InformationTheory.swift
     blob: f7ba2a27904ceb19eef0fb5b06d1c5aad8b3894b
   - path: Sources/SubstrateML/JacobiSVD.swift
-    blob: fcd924ff0a8409f224b56e7229f59659a6b5f51e
+    blob: ca87cf2e57a5469b950ab46f4951ca3a05c1c864
   - path: Sources/SubstrateML/LatticeDistance.swift
     blob: a7b96a376dfba0c815e4dc91962da1ccaeb2ac1d
   - path: Sources/SubstrateML/LLMCalibrationCurve.swift

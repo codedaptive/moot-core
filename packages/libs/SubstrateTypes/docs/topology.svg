@@ -47,7 +47,7 @@ sources:
   - path: Sources/SubstrateTypes/AuditEvent.swift
     blob: fbfabeb4eaba4bf43b6e45d8c2b772d994a12b7b
   - path: Sources/SubstrateTypes/GSetAuditLog.swift
-    blob: 1a4452e4c8a147d4fac299a3319b0cb4e70cb795
+    blob: 46508e5af2a855b29ec45b4e02635477e3460544
   - path: Sources/SubstrateTypes/ContentHash.swift
     blob: 835744792dc191e824e676d8715c96111b4945ff
   - path: Sources/SubstrateTypes/MerkleRoot.swift
