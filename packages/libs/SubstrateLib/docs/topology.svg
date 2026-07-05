@@ -45,11 +45,11 @@ sources:
   <!-- Row 1: the two independent write paths -->
   <rect class="box" x="40" y="66" width="170" height="56" rx="6"/>
   <text class="label" x="125" y="90" text-anchor="middle">AuditGate</text>
-  <text class="sub" x="125" y="106" text-anchor="middle">admit() — production write gate</text>
+  <text class="sub" x="125" y="106" text-anchor="middle">admit() : production write gate</text>
 
   <rect class="box" x="710" y="66" width="170" height="56" rx="6"/>
   <text class="label" x="795" y="90" text-anchor="middle">Substrate</text>
-  <text class="sub" x="795" y="106" text-anchor="middle">nine verbs — reference impl</text>
+  <text class="sub" x="795" y="106" text-anchor="middle">nine verbs : reference impl</text>
 
   <!-- Shared automaton -->
   <rect class="box" x="330" y="176" width="260" height="56" rx="6"/>
@@ -85,7 +85,7 @@ sources:
 
   <!-- Telemetry sink, external package -->
   <rect class="region" x="220" y="430" width="480" height="110"/>
-  <text class="regionlabel" x="230" y="448">Telemetry sink (external — IntellectusLib)</text>
+  <text class="regionlabel" x="230" y="448">Telemetry sink (external : IntellectusLib)</text>
 
   <rect class="art" x="340" y="464" width="240" height="56" rx="6"/>
   <text class="label" x="460" y="486" text-anchor="middle">Intellectus.report</text>

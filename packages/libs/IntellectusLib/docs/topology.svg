@@ -50,7 +50,7 @@ sources:
   <!-- Off-path dead end -->
   <rect class="art" x="190" y="190" width="150" height="44" rx="6"/>
   <text class="sub" x="265" y="208" text-anchor="middle">disabled (default)</text>
-  <text class="sub" x="265" y="222" text-anchor="middle">return — no sink call</text>
+  <text class="sub" x="265" y="222" text-anchor="middle">return: no sink call</text>
 
   <!-- Holder / sink lock -->
   <rect class="box" x="390" y="90" width="150" height="56" rx="6"/>
@@ -87,5 +87,5 @@ sources:
   <line class="flow" x1="540" y1="124" x2="613" y2="175"/>
   <line class="flow" x1="735" y1="210" x2="735" y2="248"/>
 
-  <text class="sub" x="470" y="160" text-anchor="middle" fill="#777">sample.receive(_:) — outside the lock</text>
+  <text class="sub" x="470" y="160" text-anchor="middle" fill="#777">sample.receive(_:): outside the lock</text>
 </svg>
