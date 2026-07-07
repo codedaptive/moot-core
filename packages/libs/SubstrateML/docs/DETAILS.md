@@ -2,8 +2,8 @@
 doc: DETAILS
 package: SubstrateML
 repo: moot-core
-authored_commit: b2a5c30b794cf477e18022c55e2fea348614d337
-authored_date: 2026-07-04
+authored_commit: 22ca2725f0db6a880932d1d38680b38e0d1d92de
+authored_date: 2026-07-07
 sources:
   - path: Sources/SubstrateML/ActionOutcomeMatrix.swift
     blob: 612ee840126c72dd0d07505147ba2991ac3bb0b9
@@ -18,7 +18,7 @@ sources:
   - path: Sources/SubstrateML/BradleyTerry.swift
     blob: 63d335ee50ccee803f0508eb6f3135a29b6545db
   - path: Sources/SubstrateML/CommunityDetection.swift
-    blob: bfba8e0255baeb66d4c79ccfaf34cd11e21a5ebd
+    blob: 5e6778615d813ccd97d355b3a7fe1932b7d3e461
   - path: Sources/SubstrateML/CompositeDistance.swift
     blob: a5f94c631d89c92d45b60e9da43be7fe6bdd19a2
   - path: Sources/SubstrateML/ConceptImplications.swift
@@ -32,7 +32,7 @@ sources:
   - path: Sources/SubstrateML/DPORReduction.swift
     blob: 3d3c79e8ce7694b8308bb1c970e86a24de0446b0
   - path: Sources/SubstrateML/EigenvalueCentrality.swift
-    blob: f427430c34add289231520ba19ae4781316cbd13
+    blob: 874303ed46c8a5043e361d7c0a9a470b8654f88f
   - path: Sources/SubstrateML/FeatureExtractors.swift
     blob: 7e6d388a588ff7bec04be631948387a086a253ed
   - path: Sources/SubstrateML/FFT.swift
@@ -84,6 +84,14 @@ sources:
 ---
 
 # SubstrateML Details
+
+## Current Release Details
+
+SubstrateML still owns the math.
+The release changes the call contract for graph metrics.
+`estate` and `ts` are now required.
+Defaults were removed so a silent telemetry tag cannot slip through a call site.
+LexRank and other offline callers pass explicit sentinels.
 
 This document walks through each source file in the package. Read
 `OVERVIEW.md` first for the big picture. The files appear in

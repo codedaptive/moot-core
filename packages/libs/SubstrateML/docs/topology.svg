@@ -3,8 +3,8 @@
 doc: topology
 package: SubstrateML
 repo: moot-core
-authored_commit: b2a5c30b794cf477e18022c55e2fea348614d337
-authored_date: 2026-07-04
+authored_commit: 22ca2725f0db6a880932d1d38680b38e0d1d92de
+authored_date: 2026-07-07
 sources:
   - path: Sources/SubstrateML/FeatureExtractors.swift
     blob: 7e6d388a588ff7bec04be631948387a086a253ed
@@ -17,9 +17,9 @@ sources:
   - path: Sources/SubstrateML/CompositeDistance.swift
     blob: a5f94c631d89c92d45b60e9da43be7fe6bdd19a2
   - path: Sources/SubstrateML/CommunityDetection.swift
-    blob: bfba8e0255baeb66d4c79ccfaf34cd11e21a5ebd
+    blob: 5e6778615d813ccd97d355b3a7fe1932b7d3e461
   - path: Sources/SubstrateML/EigenvalueCentrality.swift
-    blob: f427430c34add289231520ba19ae4781316cbd13
+    blob: 874303ed46c8a5043e361d7c0a9a470b8654f88f
   - path: Sources/SubstrateML/NMFAlternatingLeastSquares.swift
     blob: d64aadc8db165cc3b9f51b4fb1c644a6d6a4ca3c
   - path: Sources/SubstrateML/AssociationRuleMining.swift
@@ -64,6 +64,7 @@ sources:
 
   <!-- Title -->
   <text x="20" y="28" font-size="15" font-weight="bold" fill="#111">SubstrateML: cold-path learning over the memory estate</text>
+  <text class="sub" x="20" y="46">v1.0.24: graph metrics require explicit estate and ts telemetry inputs.</text>
 
   <!-- Inputs (caller-supplied) -->
   <rect class="box" x="20" y="120" width="150" height="66" rx="6"/>

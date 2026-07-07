@@ -2,8 +2,8 @@
 doc: AGENT_MAP
 package: SubstrateML
 repo: moot-core
-authored_commit: b2a5c30b794cf477e18022c55e2fea348614d337
-authored_date: 2026-07-04
+authored_commit: 22ca2725f0db6a880932d1d38680b38e0d1d92de
+authored_date: 2026-07-07
 sources:
   - path: Sources/SubstrateML/ActionOutcomeMatrix.swift
     blob: 612ee840126c72dd0d07505147ba2991ac3bb0b9
@@ -18,7 +18,7 @@ sources:
   - path: Sources/SubstrateML/BradleyTerry.swift
     blob: 63d335ee50ccee803f0508eb6f3135a29b6545db
   - path: Sources/SubstrateML/CommunityDetection.swift
-    blob: bfba8e0255baeb66d4c79ccfaf34cd11e21a5ebd
+    blob: 5e6778615d813ccd97d355b3a7fe1932b7d3e461
   - path: Sources/SubstrateML/CompositeDistance.swift
     blob: a5f94c631d89c92d45b60e9da43be7fe6bdd19a2
   - path: Sources/SubstrateML/ConceptImplications.swift
@@ -32,7 +32,7 @@ sources:
   - path: Sources/SubstrateML/DPORReduction.swift
     blob: 3d3c79e8ce7694b8308bb1c970e86a24de0446b0
   - path: Sources/SubstrateML/EigenvalueCentrality.swift
-    blob: f427430c34add289231520ba19ae4781316cbd13
+    blob: 874303ed46c8a5043e361d7c0a9a470b8654f88f
   - path: Sources/SubstrateML/FeatureExtractors.swift
     blob: 7e6d388a588ff7bec04be631948387a086a253ed
   - path: Sources/SubstrateML/FFT.swift
@@ -88,6 +88,10 @@ sources:
 PURPOSE: layer-3 cold-path/dreaming algorithm library of the MOOTx01 substrate: learning (decay, Bradley-Terry, calibration, NMF), graph analytics (Louvain, centrality, walks, SVD, FFT, anomaly), pattern mining (association rules, Apriori, FCA, D-G implications, temporal causality), distillation (5-stage cluster→factoid), fingerprint/distance math (FloatSimHash, composite/lattice/partial distances, moment/temporal summaries), and federation privacy math (pairing, tier contribution, tier query, DP OR-reduce). Pure functions + value types only; no storage, no clocks, no hidden state.
 
 DEPS: imports SubstrateTypes (Fingerprint256, HLC, RowId, MatrixO/F/C, SplitMix64, RecallResult…), SubstrateKernel (PortableKernel dispatch: float SimHash projection, orReduce256), IntellectusLib (telemetry; off-path = one atomic-bool load), Foundation. Imported by (per Package.swift/README): LocusKit, CognitionKit, GeniusLocusKit, NeuronKit, dreaming-daemon paths; LatticeLib (moot-semantics) uses EigenvalueCentrality for LexRank; CorpusKit LsaProvider uses JacobiSVD. Within this repo only tests + SubstrateLib's temporary `@_exported` re-export reference it (four-package split mid-migration). Rust port `rust/` = crate `substrate-ml` v1.0.0-skeleton, 38 modules 1:1 with Swift files; conformance tests rust/tests/{distillation_conformance,float_simhash_kernel_equivalence,viz_graph_signals_tests}.rs + shared JSON vectors in the engineering test harness.
+
+
+CURRENT TRUE-UP:
+- v1.0.24: `CommunityDetection.detect`, `detectFull`, and `EigenvalueCentrality.compute` require `estate` and `ts`. Offline callers use `estate: ""` and `ts: 0`.
 
 ENTRY POINTS (no single facade; per-family):
 - DistillationPipeline.swift:277 `DistillationPipeline.run(input:extractFeatures:intraItem:) -> DistillationOutput`: full 5-stage distillation
