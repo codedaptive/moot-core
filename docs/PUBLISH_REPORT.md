@@ -2,7 +2,7 @@
 # Publish Report
 
 Venue: `moot-core`
-Source commit: `2b2e66e0de0bb58438202a6b54ee84495c759d63`
+Source commit: `5d94bcc7cf411088843b9107c755c2c56f678113`
 
 ## Loaded Packages
 
