@@ -2,7 +2,7 @@
 # Publish Report
 
 Venue: `moot-core`
-Source commit: `58d01422706e2ac88e5d0d1904a9860435bbd8cc`
+Source commit: `88a99fed625877d7037404a6e15ab852950fa195`
 
 ## Loaded Packages
 
@@ -59,6 +59,7 @@ Removed internal/process comment lines:
 - `packages/libs/SubstrateML/Sources/SubstrateML/AnomalyDetection.swift`: 1 line(s)
 - `packages/libs/SubstrateML/Sources/SubstrateML/AssociationRuleMining.swift`: 2 line(s)
 - `packages/libs/SubstrateML/Sources/SubstrateML/ConceptImplications.swift`: 1 line(s)
+- `packages/libs/SubstrateML/Sources/SubstrateML/ConflictCue.swift`: 3 line(s)
 - `packages/libs/SubstrateML/Sources/SubstrateML/DistillationPipeline.swift`: 1 line(s)
 - `packages/libs/SubstrateML/Sources/SubstrateML/DistillationScorer.swift`: 1 line(s)
 - `packages/libs/SubstrateML/Sources/SubstrateML/FeatureExtractors.swift`: 4 line(s)
@@ -77,6 +78,7 @@ Removed internal/process comment lines:
 - `packages/libs/SubstrateML/Tests/SubstrateMLTests/SamplingTests.swift`: 1 line(s)
 - `packages/libs/SubstrateML/rust/src/apriori_mining.rs`: 3 line(s)
 - `packages/libs/SubstrateML/rust/src/association_rule_mining.rs`: 5 line(s)
+- `packages/libs/SubstrateML/rust/src/conflict_cue.rs`: 8 line(s)
 - `packages/libs/SubstrateML/rust/src/delta_feature_extractor.rs`: 3 line(s)
 - `packages/libs/SubstrateML/rust/src/distillation_pipeline.rs`: 4 line(s)
 - `packages/libs/SubstrateML/rust/src/distillation_scorer.rs`: 7 line(s)
