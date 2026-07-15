@@ -2,7 +2,7 @@
 # Publish Report
 
 Venue: `moot-core`
-Source commit: `88a99fed625877d7037404a6e15ab852950fa195`
+Source commit: `6fe29be84ff7ccdae2aaa0dcffb78ecada6076cb`
 
 ## Loaded Packages
 
@@ -59,7 +59,7 @@ Removed internal/process comment lines:
 - `packages/libs/SubstrateML/Sources/SubstrateML/AnomalyDetection.swift`: 1 line(s)
 - `packages/libs/SubstrateML/Sources/SubstrateML/AssociationRuleMining.swift`: 2 line(s)
 - `packages/libs/SubstrateML/Sources/SubstrateML/ConceptImplications.swift`: 1 line(s)
-- `packages/libs/SubstrateML/Sources/SubstrateML/ConflictCue.swift`: 3 line(s)
+- `packages/libs/SubstrateML/Sources/SubstrateML/ConflictCue.swift`: 4 line(s)
 - `packages/libs/SubstrateML/Sources/SubstrateML/DistillationPipeline.swift`: 1 line(s)
 - `packages/libs/SubstrateML/Sources/SubstrateML/DistillationScorer.swift`: 1 line(s)
 - `packages/libs/SubstrateML/Sources/SubstrateML/FeatureExtractors.swift`: 4 line(s)
@@ -72,13 +72,14 @@ Removed internal/process comment lines:
 - `packages/libs/SubstrateML/Sources/SubstrateML/TemporalCausalityFold.swift`: 4 line(s)
 - `packages/libs/SubstrateML/Tests/SubstrateMLTests/AssociationRuleMiningTests.swift`: 2 line(s)
 - `packages/libs/SubstrateML/Tests/SubstrateMLTests/CommunityDetectionTests.swift`: 2 line(s)
+- `packages/libs/SubstrateML/Tests/SubstrateMLTests/ConflictCueTests.swift`: 1 line(s)
 - `packages/libs/SubstrateML/Tests/SubstrateMLTests/DeltaFeatureExtractorTests.swift`: 1 line(s)
 - `packages/libs/SubstrateML/Tests/SubstrateMLTests/FeatureExtractorsTests.swift`: 1 line(s)
 - `packages/libs/SubstrateML/Tests/SubstrateMLTests/GlobalTestLock.swift`: 1 line(s)
 - `packages/libs/SubstrateML/Tests/SubstrateMLTests/SamplingTests.swift`: 1 line(s)
 - `packages/libs/SubstrateML/rust/src/apriori_mining.rs`: 3 line(s)
 - `packages/libs/SubstrateML/rust/src/association_rule_mining.rs`: 5 line(s)
-- `packages/libs/SubstrateML/rust/src/conflict_cue.rs`: 8 line(s)
+- `packages/libs/SubstrateML/rust/src/conflict_cue.rs`: 9 line(s)
 - `packages/libs/SubstrateML/rust/src/delta_feature_extractor.rs`: 3 line(s)
 - `packages/libs/SubstrateML/rust/src/distillation_pipeline.rs`: 4 line(s)
 - `packages/libs/SubstrateML/rust/src/distillation_scorer.rs`: 7 line(s)
