@@ -1,0 +1,36 @@
+# MOOT Core
+
+Apache-2.0 public SDK repository in the MOOTx01 Framework.
+Current release: v1.0.32
+Repository: https://github.com/codedaptive/moot-core
+
+Choose this repository when: You need the shared types, deterministic kernel, memory math, lifecycle rules, or telemetry contracts used by every higher MOOT SDK.
+
+## Packages
+
+- IntellectusLib: Telemetry value types and sink contracts; Swift `IntellectusLib`; Rust `intellectus-lib`; docs `packages/libs/IntellectusLib/docs/OVERVIEW.md`
+- SubstrateTypes: Shared substrate rows, bitmaps, clocks, and audit values; Swift `SubstrateTypes`; Rust `substrate-types`; docs `packages/libs/SubstrateTypes/docs/OVERVIEW.md`
+- SubstrateKernel: Deterministic hot-path primitives and bitmap operations; Swift `SubstrateKernel`; Rust `substrate-kernel`; docs `packages/libs/SubstrateKernel/docs/OVERVIEW.md`
+- SubstrateML: Learning, graph, signal, and ranking algorithms; Swift `SubstrateML`; Rust `substrate-ml`; docs `packages/libs/SubstrateML/docs/OVERVIEW.md`
+- SubstrateLib: Legal write gate, verbs, lifecycle, and integrity rules; Swift `SubstrateLib`; Rust `substrate-lib`; docs `packages/libs/SubstrateLib/docs/OVERVIEW.md`
+- EngramLib: Typed 256-bit fingerprints and distance math; Swift `EngramLib`; Rust `engram-lib`; docs `packages/libs/EngramLib/docs/OVERVIEW.md`
+
+## Documentation
+
+- Human documentation index: docs/README.md
+- Exact package map: docs/PACKAGE_MAP.md
+- Repository dependency graph: docs/DEPENDENCY_GRAPH.md
+- Conformance contract: docs/CONFORMANCE.md
+- Source provenance: SOURCE.md and docs/PUBLISH_REPORT.md
+- Security policy: SECURITY.md
+
+## SDK family
+
+- https://github.com/codedaptive/moot-memory: Structured memory, vector search, and local RAG
+- https://github.com/codedaptive/moot-semantics: ARIA vocabulary and deterministic local classification
+- https://github.com/codedaptive/moot-system: Storage, datasets, queues, sync, telemetry, and loopback HTTP
+- https://github.com/codedaptive/moot-core: Shared types, kernel, fingerprints, lifecycle rules, and memory math
+
+Do not infer that every MOOTx01 product package is Apache-2.0.
+Only code obtained from these four public SDK repositories carries their
+Apache-2.0 venue license.

@@ -2,8 +2,8 @@
 doc: DETAILS
 package: SubstrateML
 repo: moot-core
-authored_commit: 22ca2725f0db6a880932d1d38680b38e0d1d92de
-authored_date: 2026-07-07
+authored_commit: f392a5ac680d0e934e7b93eb977ab1c00f2d333c
+authored_date: 2026-07-23
 sources:
   - path: Sources/SubstrateML/ActionOutcomeMatrix.swift
     blob: 612ee840126c72dd0d07505147ba2991ac3bb0b9
@@ -81,6 +81,8 @@ sources:
     blob: 82412f392848c378b5b28221bbddade9f03bf1bf
   - path: Sources/SubstrateML/VizGraphSignals.swift
     blob: 4f90110f2a19cb92f3d45baf3bc4d82ac9c3dc65
+  - path: Sources/SubstrateML/ConflictCue.swift
+    blob: 1b70150e1751eb6792898ca4ce90537fc321c018
 ---
 
 # SubstrateML Details
@@ -93,6 +95,12 @@ The release changes the call contract for graph metrics.
 Defaults were removed so a silent telemetry tag cannot slip through a call site.
 LexRank and other offline callers pass explicit sentinels.
 
+`ConflictCue.evaluate` screens two nearby claims.
+It checks value changes first.
+It then checks one-sided negation and revision markers.
+The result names the strongest cue and a score.
+The function is pure and uses one ASCII token rule in both ports.
+
 This document walks through each source file in the package. Read
 `OVERVIEW.md` first for the big picture. The files appear in
 working-group order. First come the telemetry names. Then come the
@@ -100,6 +108,18 @@ fingerprint and distance math. Then the ingestion shapers. Then the
 learning and decay machinery. Then the graph analytics. Then the
 pattern miners. Then the distillation stages. Last come the
 federation and privacy layer.
+
+## ConflictCue.swift
+
+This file provides a precise lexical conflict screen.
+It runs after vector search has found a nearby claim pair.
+`valueDivergence` finds the same sentence shape with changed number tokens.
+`negationAsymmetry` finds one negated form of the same claim.
+`markerRevision` finds a revision marker over similar content.
+
+Scores at or above `strongThreshold` can support a proposal.
+Scores in the borderline band require higher-level judgment.
+Identical text and weak evidence return `.none`.
 
 ## VizGraphSignals.swift
 

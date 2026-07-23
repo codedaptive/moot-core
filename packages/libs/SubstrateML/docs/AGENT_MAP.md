@@ -2,8 +2,8 @@
 doc: AGENT_MAP
 package: SubstrateML
 repo: moot-core
-authored_commit: 22ca2725f0db6a880932d1d38680b38e0d1d92de
-authored_date: 2026-07-07
+authored_commit: f392a5ac680d0e934e7b93eb977ab1c00f2d333c
+authored_date: 2026-07-23
 sources:
   - path: Sources/SubstrateML/ActionOutcomeMatrix.swift
     blob: 612ee840126c72dd0d07505147ba2991ac3bb0b9
@@ -81,11 +81,13 @@ sources:
     blob: 82412f392848c378b5b28221bbddade9f03bf1bf
   - path: Sources/SubstrateML/VizGraphSignals.swift
     blob: 4f90110f2a19cb92f3d45baf3bc4d82ac9c3dc65
+  - path: Sources/SubstrateML/ConflictCue.swift
+    blob: 1b70150e1751eb6792898ca4ce90537fc321c018
 ---
 
 # AGENT_MAP: SubstrateML
 
-PURPOSE: layer-3 cold-path/dreaming algorithm library of the MOOTx01 substrate: learning (decay, Bradley-Terry, calibration, NMF), graph analytics (Louvain, centrality, walks, SVD, FFT, anomaly), pattern mining (association rules, Apriori, FCA, D-G implications, temporal causality), distillation (5-stage cluster→factoid), fingerprint/distance math (FloatSimHash, composite/lattice/partial distances, moment/temporal summaries), and federation privacy math (pairing, tier contribution, tier query, DP OR-reduce). Pure functions + value types only; no storage, no clocks, no hidden state.
+PURPOSE: layer-3 cold-path/dreaming algorithm library of the MOOTx01 substrate: learning (decay, Bradley-Terry, calibration, NMF), graph analytics (Louvain, centrality, walks, SVD, FFT, anomaly), pattern mining (association rules, Apriori, FCA, D-G implications, temporal causality), conflict cues, distillation (5-stage cluster→factoid), fingerprint/distance math (FloatSimHash, composite/lattice/partial distances, moment/temporal summaries), and federation privacy math (pairing, tier contribution, tier query, DP OR-reduce). Pure functions + value types only; no storage, no clocks, no hidden state.
 
 DEPS: imports SubstrateTypes (Fingerprint256, HLC, RowId, MatrixO/F/C, SplitMix64, RecallResult…), SubstrateKernel (PortableKernel dispatch: float SimHash projection, orReduce256), IntellectusLib (telemetry; off-path = one atomic-bool load), Foundation. Imported by (per Package.swift/README): LocusKit, CognitionKit, GeniusLocusKit, NeuronKit, dreaming-daemon paths; LatticeLib (moot-semantics) uses EigenvalueCentrality for LexRank; CorpusKit LsaProvider uses JacobiSVD. Within this repo only tests + SubstrateLib's temporary `@_exported` re-export reference it (four-package split mid-migration). Rust port `rust/` = crate `substrate-ml` v1.0.0-skeleton, 38 modules 1:1 with Swift files; conformance tests rust/tests/{distillation_conformance,float_simhash_kernel_equivalence,viz_graph_signals_tests}.rs + shared JSON vectors in the engineering test harness.
 
@@ -104,6 +106,9 @@ ENTRY POINTS (no single facade; per-family):
 - AprioriMining.swift:167 `AprioriMining.mine(rows:thresholds:) -> [AprioriRule]`: multi-antecedent rules
 
 ## Symbol Table
+
+- ConflictCue.swift `ConflictCue.evaluate(_:_:)`: deterministic strongest-first screen for value divergence, negation asymmetry, and revision markers.
+- ConflictCue.swift `strongThreshold` / `borderlineThreshold`: proposal and higher-level-review bands.
 
 ### Telemetry names: VizGraphSignals.swift
 - :65 `enum VizGraphSignals`: canonical metric-name constants; one authoritative file prevents orphaned metrics

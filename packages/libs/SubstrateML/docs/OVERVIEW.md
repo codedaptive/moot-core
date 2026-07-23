@@ -2,8 +2,8 @@
 doc: OVERVIEW
 package: SubstrateML
 repo: moot-core
-authored_commit: 22ca2725f0db6a880932d1d38680b38e0d1d92de
-authored_date: 2026-07-07
+authored_commit: f392a5ac680d0e934e7b93eb977ab1c00f2d333c
+authored_date: 2026-07-23
 sources:
   - path: Sources/SubstrateML/ActionOutcomeMatrix.swift
     blob: 612ee840126c72dd0d07505147ba2991ac3bb0b9
@@ -81,6 +81,8 @@ sources:
     blob: 82412f392848c378b5b28221bbddade9f03bf1bf
   - path: Sources/SubstrateML/VizGraphSignals.swift
     blob: 4f90110f2a19cb92f3d45baf3bc4d82ac9c3dc65
+  - path: Sources/SubstrateML/ConflictCue.swift
+    blob: 1b70150e1751eb6792898ca4ce90537fc321c018
 ---
 
 # SubstrateML Overview
@@ -93,6 +95,12 @@ The graph analytics calls now require explicit telemetry context.
 A caller with no estate passes `""`.
 A caller with no clock value passes `0.0`.
 This makes telemetry scope visible at every call site.
+
+`ConflictCue` adds a deterministic pairwise conflict screen.
+It detects changed values, one-sided negation, and revision markers.
+Strong cues can support a reviewable contradiction proposal.
+Borderline cues stay visible for higher-level judgment.
+The Swift and Rust ports share the same tokenizer and score fixtures.
 
 ## What This Library Does
 
